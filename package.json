@@ -1,0 +1,24 @@
+{
+  "name": "node-store",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "azure-storage": "^2.1.0",
+    "body-parser": "~1.17.1",
+    "debug": "~2.6.3",
+    "express": "~4.15.2",
+    "guid": "0.0.12",
+    "jsonwebtoken": "^7.4.0",
+    "md5": "^2.2.1",
+    "mongoose": "^4.9.8",
+    "morgan": "~1.8.1",
+    "sendgrid": "^2.0.0"
+  }
+}
