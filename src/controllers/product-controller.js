@@ -1,13 +1,12 @@
 'use strict';
-const azure = require('azure-storage');
-const config = require('../config');
+
+const ValidationContract = require('../validators/fluent-validator');
 const repository = require('../repositories/product-repository');
-const ValidationContract = require('../validations/fluent-validator');
 
-exports.get = async(req, res) => {
+exports.get = async(req, res, next) => {
     try {
-        var result = await repository.get();
-        res.status(200).send(result);
+        var data = await repository.get();
+        res.status(200).send(data);
     } catch (e) {
         res.status(500).send({
             message: 'Falha ao processar sua requisição'
@@ -15,34 +14,85 @@ exports.get = async(req, res) => {
     }
 }
 
-exports.create = async(req, res) => {
+exports.getBySlug = async(req, res, next) => {
     try {
-        // Validações
-        let contract = new ValidationContract();
-        contract.hasMinLen(req.body.firstName, 3, 'O nome deve conter pelo menos 3 caracteres');
-        contract.hasMaxLen(req.body.firstName, 40, 'O nome deve conter no máximo 40 caracteres');
-        contract.hasMinLen(req.body.lastName, 3, 'O sobrenome deve conter pelo menos 3 caracteres');
-        contract.hasMaxLen(req.body.lastName, 40, 'O sobrenome deve conter no máximo 40 caracteres');
-        contract.isRequired(req.body.document, 'O CPF é obrigatório');
-        contract.isFixedLen(req.body.document, 11, 'O CPF deve conter 11 caracteres');
-        contract.isEmail(req.body.email, 'E-mail inválido');
-        contract.hasMinLen(req.body.password, 6, 'A senha deve conter pelo menos 6 caracteres');
-        contract.hasMaxLen(req.body.password, 20, 'A senha deve conter no máximo 20 caracteres');
+        var data = await repository.getBySlug(req.params.slug);
+        res.status(200).send(data);
+    } catch (e) {
+        res.status(500).send({
+            message: 'Falha ao processar sua requisição'
+        });
+    }
+}
 
-        // Se os dados forem inválidos
-        if (!contract.isValid()) {
-            res.status(400).send(contract.errors()).end();
-            return;
-        }
-        
-        // Retorna sucesso
+exports.getById = async(req, res, next) => {
+    try {
+        var data = await repository.getById(req.params.id);
+        res.status(200).send(data);
+    } catch (e) {
+        res.status(500).send({
+            message: 'Falha ao processar sua requisição'
+        });
+    }
+}
+
+exports.getByTag = async(req, res, next) => {
+    try {
+        const data = await repository.getByTag(req.params.tag);
+        res.status(200).send(data);
+    } catch (e) {
+        res.status(500).send({
+            message: 'Falha ao processar sua requisição'
+        });
+    }
+}
+
+exports.post = async(req, res, next) => {
+    let contract = new ValidationContract();
+    contract.hasMinLen(req.body.title, 3, 'O título deve conter pelo menos 3 caracteres');
+    contract.hasMinLen(req.body.slug, 3, 'O título deve conter pelo menos 3 caracteres');
+    contract.hasMinLen(req.body.description, 3, 'O título deve conter pelo menos 3 caracteres');
+
+    // Se os dados forem inválidos
+    if (!contract.isValid()) {
+        res.status(400).send(contract.errors()).end();
+        return;
+    }
+
+    try {
+        await repository.create(req.body);
         res.status(201).send({
-            message: 'Sua conta foi criada e está pendente ativação'
+            message: 'Produto cadastrado com sucesso!'
         });
     } catch (e) {
-        console.log(e);
         res.status(500).send({
             message: 'Falha ao processar sua requisição'
         });
     }
-}
+};
+
+exports.put = async(req, res, next) => {
+    try {
+        await repository.update(req.params.id, req.body);
+        res.status(200).send({
+            message: 'Produto atualizado com sucesso!'
+        });
+    } catch (e) {
+        res.status(500).send({
+            message: 'Falha ao processar sua requisição'
+        });
+    }
+};
+
+exports.delete = async(req, res, next) => {
+    try {
+        await repository.delete(req.body.id)
+        res.status(200).send({
+            message: 'Produto removido com sucesso!'
+        });
+    } catch (e) {
+        res.status(500).send({
+            message: 'Falha ao processar sua requisição'
+        });
+    }
+};
